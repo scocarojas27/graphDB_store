@@ -1,0 +1,13 @@
+upsert{
+  query{
+    me(func: has(ip)) {
+      v as uid
+ 	  device
+    }
+  }
+  mutation{
+		set{
+			uid(v) <date> "1622264095" .
+    }
+  }
+}

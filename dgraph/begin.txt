@@ -1,0 +1,5 @@
+1. sudo docker run -it dgraph/dgraph:latest dgraph
+2. sudo docker run -it -p 5080:5080 --network dgraph_default -p 6080:6080 -v ~/zero:/dgraph dgraph/dgraph:latest dgraph zero --my=192.168.0.18:5080
+3. sudo docker run -it -p 7080:7080 --network dgraph_default -p 8080:8080 -p 9080:9080 -v ~/server1:/dgraph dgraph/dgraph:latest dgraph alpha --security whitelist=172.18.0.1 --zero=192.168.0.18:5080 --my=192.168.0.18:7080
+4. sudo docker run -it -p 7081:7081 --network dgraph_default -p 8081:8081 -p 9081:9081 -v ~/server2:/dgraph dgraph/dgraph:latest dgraph alpha --zero=192.168.0.18:5080 --my=192.168.0.18:7081  -o=1
+5. sudo docker run -it -p 8000:8000 --network dgraph_default dgraph/dgraph:v20.11.2 dgraph-ratel
