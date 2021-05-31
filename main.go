@@ -1,11 +1,17 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/render"
+	"github.com/graphql-go/graphql"
+	"github.com/scocarojas27/graphDB_store/dgraph"
+	"github.com/scocarojas27/graphDB_store/gql"
+	"github.com/scocarojas27/graphDB_store/server"
 )
 
 type Buyer struct {
@@ -29,81 +35,50 @@ type Transaction struct {
 }
 
 func main() {
-	http.HandleFunc("/api/thumbnail", thumbnailHandler)
+	router, db := initializeAPI()
+	defer db.Close()
 
-	fs := http.FileServer(http.Dir("./frontend/dist"))
-	http.Handle("/", fs)
+	// Listen on port 4000 and if there's an error log it and exit
+	log.Fatal(http.ListenAndServe(":4000", router))
+}
 
-	fmt.Println("Server listening on port 3000")
-	log.Panic(
-		http.ListenAndServe(":3000", nil),
+func initializeAPI() (*chi.Mux, *dgraph.Db) {
+	// Create a new router
+	router := chi.NewRouter()
+
+	// Create a new connection to our pg database
+	db, err := dgraph.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create our root query for graphql
+	rootQuery := gql.NewRoot(db)
+	// Create a new graphql schema, passing in the the root query
+	sc, err := graphql.NewSchema(
+		graphql.SchemaConfig{Query: rootQuery.Query},
 	)
-}
-
-type thumbnailRequest struct {
-	Url string `json:"url"`
-}
-
-type screenshotAPIRequest struct {
-	Token          string `json:"token"`
-	Url            string `json:"url"`
-	Output         string `json:"output"`
-	Width          int    `json:"width"`
-	Height         int    `json:"height"`
-	ThumbnailWidth int    `json:"thumbnail_width"`
-}
-
-func thumbnailHandler(w http.ResponseWriter, r *http.Request) {
-	var decoded thumbnailRequest
-
-	// Try to decode the request into the thumbnailRequest struct.
-	err := json.NewDecoder(r.Body).Decode(&decoded)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		fmt.Println("Error creating schema: ", err)
 	}
 
-	// Create a struct with the parameters needed to call the ScreenshotAPI.
-	apiRequest := screenshotAPIRequest{
-		Token:          "BX1PM5D-H4248DW-Q3PJKHX-Y4PF021",
-		Url:            decoded.Url,
-		Output:         "json",
-		Width:          1920,
-		Height:         1080,
-		ThumbnailWidth: 300,
+	// Create a server struct that holds a pointer to our database as well
+	// as the address of our graphql schema
+	s := server.Server{
+		GqlSchema: &sc,
 	}
 
-	// Convert the struct to a JSON string.
-	jsonString, err := json.Marshal(apiRequest)
-	checkError(err)
+	// Add some middleware to our router
+	router.Use(
+		render.SetContentType(render.ContentTypeJSON), // set content-type headers as application/json
+		middleware.Logger,          // log api request calls
+		middleware.DefaultCompress, // compress results, mostly gzipping assets and json
+		middleware.StripSlashes,    // match paths with a trailing slash, strip it, and continue routing through the mux
+		middleware.Recoverer,       // recover from panics without crashing server
+	)
 
-	// Create a HTTP request.
-	req, err := http.NewRequest("POST", "https://screenshotapi.net/api/v1/screenshot/", bytes.NewBuffer(jsonString))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	// Create the graphql route with a Server method to handle it
+	router.Post("/graphql", s.GraphQL())
 
-	// Execute the HTTP request.
-	client := &http.Client{}
-	response, err := client.Do(req)
-	checkError(err)
-
-	// Tell Go to close the response at the end of the function.
-	defer response.Body.Close()
-
-	// Read the raw response into a Go struct.
-	type screenshotAPIResponse struct {
-		Screenshot string `json:"screenshot"`
-	}
-	var apiResponse screenshotAPIResponse
-	err = json.NewDecoder(response.Body).Decode(&apiResponse)
-	checkError(err)
-
-	// Pass back the screenshot URL to the frontend.
-	_, err = fmt.Fprintf(w, `{ "screenshot": "%s" }`, apiResponse.Screenshot)
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Panic(err)
-	}
+	return router, db
 }
