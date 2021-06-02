@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/dgraph-io/dgo/v2"
-	dgo "github.com/dgraph-io/dgo/v2"
 	api "github.com/dgraph-io/dgo/v2/protos/api"
 	grpc "google.golang.org/grpc"
 )
@@ -21,9 +20,12 @@ func New() (*Db, error) {
 	d, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 
-	return dgo.NewDgraphClient(api.NewDgraphClient(d)), err
+	db := dgo.NewDgraphClient(api.NewDgraphClient(d))
+
+	return &Db{db}, err
 }
 
 type Buyer struct {
@@ -50,7 +52,7 @@ type Transaction struct {
 }
 
 func (d *Db) getBuyerById(buyer_id string) Buyer {
-	txn := d.Dgraph.newReadOnlyTxn()
+	txn := d.NewReadOnlyTxn()
 	resp, err := txn.Query(context.Background(), `{
 		me(fun: eq(Buyer.buyer_id,buyer_id)){
 			Buyer.buyer_id

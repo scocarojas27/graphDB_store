@@ -30,7 +30,7 @@ func NewRoot(db *dgraph.Db) *Root {
 								Type: graphql.String,
 							},
 						},
-						Resolve: resolver.UserResolver,
+						Resolve: resolver.BuyerResolver,
 					},
 				},
 			},
