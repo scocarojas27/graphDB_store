@@ -1,4 +1,4 @@
-package dgraph
+package dgraphql
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"log"
 
 	"github.com/dgraph-io/dgo/v2"
-	api "github.com/dgraph-io/dgo/v2/protos/api"
-	grpc "google.golang.org/grpc"
+	"github.com/dgraph-io/dgo/v2/protos/api"
+	"google.golang.org/grpc"
 )
 
 type Db struct {
