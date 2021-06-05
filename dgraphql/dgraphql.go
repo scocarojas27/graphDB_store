@@ -11,11 +11,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-/*type Db struct {
+type Db struct {
 	*dgo.Dgraph
-}*/
+}
 
-func New() (*dgo.Dgraph, error) {
+func New() (*Db, error) {
 	// Dial a gRPC connection. The address to dial to can be configured when
 	// setting up the dgraph cluster.
 	d, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
@@ -26,7 +26,7 @@ func New() (*dgo.Dgraph, error) {
 
 	db := dgo.NewDgraphClient(api.NewDgraphClient(d))
 
-	return db, err
+	return &Db{db}, err
 }
 
 type Buyer struct {
@@ -52,7 +52,7 @@ type Transaction struct {
 	date           string
 }
 
-func getBuyerById(buyer_id string, d *dgo.Dgraph) Buyer {
+func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	txn := d.NewReadOnlyTxn()
 	resp, err := txn.Query(context.Background(), `{
 		me(fun: eq(Buyer.buyer_id,buyer_id)){
