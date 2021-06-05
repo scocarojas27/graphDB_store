@@ -1,8 +1,8 @@
 package gql
 
 import (
+	"github.com/dgraph-io/dgo/v2"
 	"github.com/graphql-go/graphql"
-	"github.com/scocarojas27/graphDB_store/dgraph"
 )
 
 // Root holds a pointer to a graphql object
@@ -11,7 +11,7 @@ type Root struct {
 }
 
 // NewRoot returns base query type. This is where we add all the base queries
-func NewRoot(db *dgraph.Db) *Root {
+func NewRoot(db *dgo.Dgraph) *Root {
 	// Create a resolver holding our databse. Resolver can be found in resolvers.go
 	resolver := Resolver{db: db}
 

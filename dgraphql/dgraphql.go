@@ -2,6 +2,7 @@ package dgraphql
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -10,11 +11,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Db struct {
+/*type Db struct {
 	*dgo.Dgraph
-}
+}*/
 
-func New() (*Db, error) {
+func New() (*dgo.Dgraph, error) {
 	// Dial a gRPC connection. The address to dial to can be configured when
 	// setting up the dgraph cluster.
 	d, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
@@ -25,33 +26,33 @@ func New() (*Db, error) {
 
 	db := dgo.NewDgraphClient(api.NewDgraphClient(d))
 
-	return &Db{db}, err
+	return db, err
 }
 
 type Buyer struct {
-	buyer_id string `json:"buyer_id,omitempty"`
-	name     string `json:"name,omitempty"`
-	age      int    `json:"age,omitempty"`
-	date     string `json:"date,omitempty"`
+	buyer_id string
+	name     string
+	age      int
+	date     string
 }
 
 type Product struct {
-	product_id string `json:"product_id,omitempty"`
-	name       string `json:"name,omitempty"`
-	price      int    `json:"price,omitempty"`
-	date       string `json:"date,omitempty"`
+	product_id string
+	name       string
+	price      int
+	date       string
 }
 
 type Transaction struct {
-	transaction_id string    `json:"transaction_id,omitempty"`
-	buyer_id       string    `json:"buyer_id,omitempty"`
-	ip             string    `json:"ip,omitempty"`
-	device         string    `json:"device,omitempty"`
-	products       []Product `json:"products,omitempty"`
-	date           string    `json:"date,omitempty"`
+	transaction_id string
+	buyer_id       string
+	ip             string
+	device         string
+	products       []Product
+	date           string
 }
 
-func (d *Db) getBuyerById(buyer_id string) Buyer {
+func getBuyerById(buyer_id string, d *dgo.Dgraph) Buyer {
 	txn := d.NewReadOnlyTxn()
 	resp, err := txn.Query(context.Background(), `{
 		me(fun: eq(Buyer.buyer_id,buyer_id)){
@@ -65,12 +66,13 @@ func (d *Db) getBuyerById(buyer_id string) Buyer {
 		log.Fatal(err)
 	}
 	fmt.Printf("Response: %s\n", resp.Json)
+
 	var b Buyer
-	err = resp.Json.data.me
-	b.buyer_id = err.Buyer.buyer_id
-	b.name = err.Buyer.name
-	b.age = err.Buyer.age
-	b.date = err.Buyer.date
+	err = json.Unmarshal(resp.GetJson(), &b)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return b
 }
