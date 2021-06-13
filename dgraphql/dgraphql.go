@@ -15,41 +15,41 @@ type Db struct {
 	*dgo.Dgraph
 }
 
-func New() (*Db, error) {
+func New() (*Db, *grpc.ClientConn, error) {
 	// Dial a gRPC connection. The address to dial to can be configured when
 	// setting up the dgraph cluster.
 	d, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	db := dgo.NewDgraphClient(api.NewDgraphClient(d))
 
-	return &Db{db}, err
+	return &Db{db}, d, err
 }
 
 type Buyer struct {
-	buyer_id string
-	name     string
-	age      int
-	date     string
+	BuyerID string
+	Name    string
+	Age     int
+	Date    string
 }
 
 type Product struct {
-	product_id string
-	name       string
-	price      int
-	date       string
+	ProductID string
+	Name      string
+	Price     int
+	Date      string
 }
 
 type Transaction struct {
-	transaction_id string
-	buyer_id       string
-	ip             string
-	device         string
-	products       []Product
-	date           string
+	TransactionID string
+	BuyerID       string
+	Ip            string
+	Device        string
+	Products      []Product
+	Date          string
 }
 
 func (d *Db) GetBuyerById(buyer_id string) Buyer {

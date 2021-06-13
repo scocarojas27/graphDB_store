@@ -2,7 +2,7 @@ package gql
 
 import (
 	"github.com/graphql-go/graphql"
-	. "github.com/scocarojas27/graphDB_store/dgraphql"
+	"github.com/scocarojas27/graphDB_store/dgraphql"
 )
 
 // Root holds a pointer to a graphql object
@@ -11,7 +11,7 @@ type Root struct {
 }
 
 // NewRoot returns base query type. This is where we add all the base queries
-func NewRoot(db *Db) *Root {
+func NewRoot(db *dgraphql.Db) *Root {
 	// Create a resolver holding our databse. Resolver can be found in resolvers.go
 	resolver := Resolver{db: db}
 
@@ -22,7 +22,7 @@ func NewRoot(db *Db) *Root {
 			graphql.ObjectConfig{
 				Name: "Query",
 				Fields: graphql.Fields{
-					"buyers": &graphql.Field{
+					"buyer": &graphql.Field{
 						// Slice of User type which can be found in types.go
 						Type: graphql.NewList(Buyer),
 						Args: graphql.FieldConfigArgument{

@@ -1,0 +1,7 @@
+Run air: 
+
+docker run -it --rm \
+    -w "/go/src/github.com/scocarojas27/graphDB_store" \
+    -v $(pwd):/go/src/github.com/scocarojas27/graphDB_store \
+    -p 9090:9090\
+    cosmtrek/air
