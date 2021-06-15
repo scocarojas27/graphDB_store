@@ -15,34 +15,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Buyer struct {
-	buyer_id string
-	name     string
-	age      int
-}
-
-type Product struct {
-	product_id string
-	name       string
-	price      int
-}
-
-type Transaction struct {
-	transaction_id string
-	buyer          Buyer
-	ip             string
-	device         string
-	products       []Product
-}
-
 func main() {
+
 	router, db, conn := initializeAPI()
 	defer conn.Close()
 
-	log.Fatal("DB info:", db)
+	log.Println("DB info:", db)
 
 	// Listen on port 4000 and if there's an error log it and exit
-	fmt.Println(router)
+	log.Println(router)
 	log.Fatal(http.ListenAndServe(":4000", router))
 }
 

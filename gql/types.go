@@ -7,16 +7,36 @@ var Buyer = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Buyer",
 		Fields: graphql.Fields{
-			"buyer_id": &graphql.Field{
+			"BuyerID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"name": &graphql.Field{
+			"Name": &graphql.Field{
 				Type: graphql.String,
 			},
-			"age": &graphql.Field{
+			"Age": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"date": &graphql.Field{
+			"Date": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var Product = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Product",
+		Fields: graphql.Fields{
+			"ProductID": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Price": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"Date": &graphql.Field{
 				Type: graphql.String,
 			},
 		},
