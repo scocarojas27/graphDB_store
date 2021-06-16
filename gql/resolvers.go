@@ -32,3 +32,9 @@ func (r *Resolver) InsertProductsResolver(p graphql.ResolveParams) (interface{},
 	products := r.db.InsertProducts()
 	return products, nil
 }
+
+func (r *Resolver) InsertBuyersResolver(p graphql.ResolveParams) (interface{}, error) {
+	// Strip the name from arguments and assert that it's a string
+	buyers := r.db.InsertBuyers()
+	return buyers, nil
+}

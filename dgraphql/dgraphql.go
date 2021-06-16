@@ -60,6 +60,12 @@ type Transaction struct {
 	Date          string    `json:"Date,omitempty"`
 }
 
+type Report struct {
+	Transactions   []Transaction `json:"Transactions,omitempty"`
+	SameIp         []Buyer       `json:"SameIp,omitempty"`
+	Recomendations []Product     `json:"Recomendations,omitempty"`
+}
+
 func (d *Db) InsertProducts() []Product {
 
 	response, err := http.Get("https://kqxty15mpg.execute-api.us-east-1.amazonaws.com/products")
@@ -147,27 +153,31 @@ func (d *Db) InsertBuyers() []Buyer {
 		log.Fatal(err)
 	}
 
-	lines := bytes.NewReader(responseData)
-	buffReader := bufio.NewReader(lines)
-	scanner := bufio.NewScanner(buffReader)
-	insertDate := string(strconv.FormatInt(time.Now().Unix(), 10))
-	con := 0
-
 	type RootInsertBuyers struct {
 		Me []Buyer `json:"me"`
 	}
 
-	var b []Buyer
+	var buyers []Buyer
 
-	for scanner.Scan() {
+	var data []interface{}
+	json.Unmarshal(responseData, &data)
+	insertDate := strconv.FormatInt(time.Now().Unix(), 10)
+	con := 0
+
+	for _, e := range data {
 		var r RootInsertBuyers
 		var bu Buyer
-		line := scanner.Text()
-		prueba := strings.Split(string(line), "'")
 		uid := "_:Buyer" + strconv.Itoa(con) + insertDate
-		age, _ := strconv.Atoi(prueba[2])
-		variables := map[string]interface{}{"uid": uid, "BuyerID": prueba[0], "Name": prueba[1], "Age": age, "Date": insertDate, "dgraph.type": "Buyer"}
-		productJson, err := json.Marshal(variables)
+		b := e.(map[string]interface{})
+		age := int(b["age"].(float64))
+		buyer := map[string]interface{}{
+			"uid":     uid,
+			"BuyerID": b["id"].(string),
+			"Name":    b["name"].(string),
+			"Age":     age,
+			"Date":    insertDate,
+		}
+		productJson, err := json.Marshal(buyer)
 
 		if err != nil {
 			log.Fatal(err)
@@ -179,12 +189,14 @@ func (d *Db) InsertBuyers() []Buyer {
 			log.Fatal(err)
 		}
 
+		fmt.Println(err)
+
 		bu.BuyerID = "ssss"
 		bu.Name = "sssss"
-		bu.Age = 14
+		bu.Age = 1400
 		bu.Date = "sssss"
 
-		b = append(b, bu)
+		buyers = append(buyers, bu)
 
 		resp, err := txn.Mutate(context.Background(), &api.Mutation{SetJson: productJson})
 		if err != nil {
@@ -200,8 +212,7 @@ func (d *Db) InsertBuyers() []Buyer {
 		log.Fatal(err)
 	}
 
-	return b
-
+	return buyers
 }
 
 func (d *Db) GetBuyerById(buyer_id string) Buyer {
@@ -285,4 +296,53 @@ func (d *Db) GetAllBuyers() []Buyer {
 	b = r.Me
 
 	return b
+}
+
+func (d *Db) GetTransactionsByBuyerId(buyer_id string) []Transaction {
+
+	variables := map[string]string{"$id1": buyer_id}
+	const q = `query Me($id1: string)
+		{
+			me(func: eq(BuyerID, $id1)) @filter(has(Ip)){
+				TransactionID
+				BuyerID
+				Ip
+				Device
+				Products
+				Date
+			}
+		}
+	`
+	//fmt.Println(variables)
+	txn := d.NewReadOnlyTxn()
+	resp, err := txn.QueryWithVars(context.Background(), q, variables)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Response: %s\n", resp.Json)
+
+	type RootTransactions struct {
+		Me []Transaction `json:"me"`
+	}
+
+	var t []Transaction
+	var r RootTransactions
+	err = json.Unmarshal(resp.GetJson(), &r)
+	fmt.Println(err)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, _ := json.MarshalIndent(r, "", "\t")
+	fmt.Printf("%s\n", out)
+
+	t = r.Me
+
+	return t
+}
+
+func (d *Db) GetReport(buyer_id string) Report {
+	buyer := d.GetBuyerById(buyer_id)
+	transactions := d.GetTransactionsByBuyerId(buyer_id)
 }

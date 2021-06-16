@@ -40,6 +40,10 @@ func NewRoot(db *dgraphql.Db) *Root {
 						Type:    graphql.NewNonNull(Product),
 						Resolve: resolver.InsertProductsResolver,
 					},
+					"InsertBuyers": &graphql.Field{
+						Type:    graphql.NewNonNull(Buyer),
+						Resolve: resolver.InsertBuyersResolver,
+					},
 				},
 			},
 		),
