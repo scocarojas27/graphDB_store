@@ -44,6 +44,35 @@ func NewRoot(db *dgraphql.Db) *Root {
 						Type:    graphql.NewNonNull(Buyer),
 						Resolve: resolver.InsertBuyersResolver,
 					},
+					"BuyerReport": &graphql.Field{
+						Type: graphql.NewNonNull(Report),
+						Args: graphql.FieldConfigArgument{
+							"BuyerID": &graphql.ArgumentConfig{
+								Type: graphql.String,
+							},
+						},
+						Resolve: resolver.ReportResolver,
+					},
+					"Product": &graphql.Field{
+						// Slice of User type which can be found in types.go
+						Type: graphql.NewNonNull(Product),
+						Args: graphql.FieldConfigArgument{
+							"ProductID": &graphql.ArgumentConfig{
+								Type: graphql.String,
+							},
+						},
+						Resolve: resolver.ProductResolver,
+					},
+					"BuyerTransactions": &graphql.Field{
+						// Slice of User type which can be found in types.go
+						Type: graphql.NewList(Transaction),
+						Args: graphql.FieldConfigArgument{
+							"BuyerID": &graphql.ArgumentConfig{
+								Type: graphql.String,
+							},
+						},
+						Resolve: resolver.BuyerTransactionResolver,
+					},
 				},
 			},
 		),

@@ -38,3 +38,33 @@ func (r *Resolver) InsertBuyersResolver(p graphql.ResolveParams) (interface{}, e
 	buyers := r.db.InsertBuyers()
 	return buyers, nil
 }
+
+func (r *Resolver) ReportResolver(p graphql.ResolveParams) (interface{}, error) {
+	// Strip the name from arguments and assert that it's a string
+	buyer_id, ok := p.Args["BuyerID"].(string)
+	if ok {
+		report := r.db.GetReport(buyer_id)
+		return report, nil
+	}
+	return nil, nil
+}
+
+func (r *Resolver) ProductResolver(p graphql.ResolveParams) (interface{}, error) {
+	// Strip the name from arguments and assert that it's a string
+	product_id, ok := p.Args["ProductID"].(string)
+	if ok {
+		product, _ := r.db.GetProductById(product_id)
+		return product, nil
+	}
+	return nil, nil
+}
+
+func (r *Resolver) BuyerTransactionResolver(p graphql.ResolveParams) (interface{}, error) {
+	// Strip the name from arguments and assert that it's a string
+	buyer_id, ok := p.Args["BuyerID"].(string)
+	if ok {
+		transactions := r.db.GetTransactionsByBuyerId(buyer_id)
+		return transactions, nil
+	}
+	return nil, nil
+}

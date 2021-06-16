@@ -52,12 +52,12 @@ type Product struct {
 }
 
 type Transaction struct {
-	TransactionID string    `json:"TransactionID,omitempty"`
-	BuyerID       string    `json:"BuyerID,omitempty"`
-	Ip            string    `json:"Ip,omitempty"`
-	Device        string    `json:"Device,omitempty"`
-	Products      []Product `json:"Products,omitempty"`
-	Date          string    `json:"Date,omitempty"`
+	TransactionID string   `json:"TransactionID,omitempty"`
+	BuyerID       string   `json:"BuyerID,omitempty"`
+	Ip            string   `json:"Ip,omitempty"`
+	Device        string   `json:"Device,omitempty"`
+	Products      []string `json:"Products,omitempty"`
+	Date          string   `json:"Date,omitempty"`
 }
 
 type Report struct {
@@ -124,7 +124,7 @@ func (d *Db) InsertProducts() []Product {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Response: %s\n", resp.Json)
+		fmt.Printf("%s\n", resp.Json)
 		con = con + 1
 	}
 
@@ -202,7 +202,7 @@ func (d *Db) InsertBuyers() []Buyer {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Response: %s\n", resp.Json)
+		fmt.Printf("%s\n", resp.Json)
 		con = con + 1
 	}
 
@@ -233,7 +233,7 @@ func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Response: %s\n", resp.Json)
+	//fmt.Printf("Response: %s\n", resp.Json)
 
 	type RootBuyer struct {
 		Me []Buyer `json:"me"`
@@ -242,7 +242,7 @@ func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	var b Buyer
 	var r RootBuyer
 	err = json.Unmarshal(resp.GetJson(), &r)
-	fmt.Println(err)
+	//fmt.Println(err)
 
 	if err != nil {
 		log.Fatal(err)
@@ -257,6 +257,50 @@ func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	b.Date = r.Me[0].Date
 
 	return b
+}
+
+func (d *Db) GetProductById(product_id string) (Product, error) {
+	variables := map[string]string{"$id1": product_id}
+	var p Product
+	const q = `query Me($id1: string)
+		{
+			me(func: eq(ProductID, $id1)) @filter(has(Price)){
+				ProductID
+				Name
+				Price
+				Date
+			}
+		}
+	`
+	//fmt.Println(variables)
+	txn := d.NewReadOnlyTxn()
+	resp, err := txn.QueryWithVars(context.Background(), q, variables)
+	if err != nil {
+		return p, err
+	}
+	//fmt.Printf("Producto: %s\n", resp.Json)
+
+	type RootProduct struct {
+		Me []Product `json:"me"`
+	}
+
+	var r RootProduct
+	err = json.Unmarshal(resp.GetJson(), &r)
+	//fmt.Println(err)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, _ := json.MarshalIndent(r, "", "\t")
+	fmt.Printf("%s\n", out)
+
+	p.ProductID = r.Me[0].ProductID
+	p.Name = r.Me[0].Name
+	p.Price = r.Me[0].Price
+	p.Date = r.Me[0].Date
+
+	return p, nil
 }
 
 func (d *Db) GetAllBuyers() []Buyer {
@@ -275,7 +319,7 @@ func (d *Db) GetAllBuyers() []Buyer {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Response: %s\n", resp.Json)
+	//fmt.Printf("Response: %s\n", resp.Json)
 
 	type RootBuyers struct {
 		Me []Buyer `json:"me"`
@@ -284,7 +328,7 @@ func (d *Db) GetAllBuyers() []Buyer {
 	var b []Buyer
 	var r RootBuyers
 	err = json.Unmarshal(resp.GetJson(), &r)
-	fmt.Println(err)
+	//fmt.Println(err)
 
 	if err != nil {
 		log.Fatal(err)
@@ -319,7 +363,7 @@ func (d *Db) GetTransactionsByBuyerId(buyer_id string) []Transaction {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Response: %s\n", resp.Json)
+	//fmt.Printf("Response: %s\n", resp.Json)
 
 	type RootTransactions struct {
 		Me []Transaction `json:"me"`
@@ -328,21 +372,113 @@ func (d *Db) GetTransactionsByBuyerId(buyer_id string) []Transaction {
 	var t []Transaction
 	var r RootTransactions
 	err = json.Unmarshal(resp.GetJson(), &r)
-	fmt.Println(err)
+	//fmt.Println(err)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	out, _ := json.MarshalIndent(r, "", "\t")
-	fmt.Printf("%s\n", out)
+	//out, _ := json.MarshalIndent(r, "", "\t")
+	//fmt.Printf("%s\n", out)
 
 	t = r.Me
 
 	return t
 }
 
+func (d *Db) GetBuyersByIp(ip string) []Buyer {
+	var buyers []Buyer
+	variables := map[string]string{"$ip1": ip}
+	const q1 = `query Me($ip1: string)
+		{
+			me(func: eq(Ip, $ip1)){
+				TransactionID
+				BuyerID
+				Ip
+				Device
+				Products
+				Date
+			}
+		}
+	`
+	txn := d.NewReadOnlyTxn()
+	resp, err := txn.QueryWithVars(context.Background(), q1, variables)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("Response: %s\n", resp.Json)
+
+	type RootTransactions struct {
+		Me []Transaction `json:"me"`
+	}
+
+	var tb []Transaction
+	var r RootTransactions
+	err = json.Unmarshal(resp.GetJson(), &r)
+	//fmt.Println(err)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//out, _ := json.MarshalIndent(r, "", "\t")
+	//fmt.Printf("%s\n", out)
+
+	tb = r.Me
+
+	for _, t := range tb {
+		buyer := d.GetBuyerById(t.BuyerID)
+		buyers = append(buyers, buyer)
+	}
+
+	return buyers
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *Db) GetReport(buyer_id string) Report {
-	buyer := d.GetBuyerById(buyer_id)
+	var report Report
+	var products []string
+	var recomedations []Product
+	//buyer := d.GetBuyerById(buyer_id)
 	transactions := d.GetTransactionsByBuyerId(buyer_id)
+	//fmt.Println(transactions)
+	sameIp := d.GetBuyersByIp(transactions[0].Ip)
+
+	for _, b := range sameIp {
+		t := d.GetTransactionsByBuyerId(b.BuyerID)
+		for _, p := range t {
+			if !(stringInSlice(p.Products[0], products)) {
+				products = append(products, p.Products[0])
+			} else {
+				fmt.Println("El producto ya está en el listado de recomendados.")
+			}
+		}
+	}
+
+	fmt.Println("Los productos: ", products)
+	fmt.Println("La cantidad de productos: ", len(products))
+	for _, r := range products {
+		fmt.Println(r)
+		p, err := d.GetProductById(r)
+		if err != nil {
+			fmt.Print("El producto no existe.")
+		} else {
+			fmt.Print("Las recomedaciones: ", p)
+			recomedations = append(recomedations, p)
+		}
+	}
+
+	report.Transactions = transactions
+	report.SameIp = sameIp
+	report.Recomendations = recomedations
+
+	return report
 }

@@ -42,3 +42,46 @@ var Product = graphql.NewObject(
 		},
 	},
 )
+
+var Report = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Report",
+		Fields: graphql.Fields{
+			"Transactions": &graphql.Field{
+				Type: graphql.String,
+			},
+			"SameIp": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Recomendations": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var Transaction = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Transaction",
+		Fields: graphql.Fields{
+			"TransactionID": &graphql.Field{
+				Type: graphql.String,
+			},
+			"BuyerID": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Ip": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Device": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Products": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Date": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
