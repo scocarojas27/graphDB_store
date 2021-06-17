@@ -275,10 +275,11 @@ func (d *Db) GetProductById(product_id string) (Product, error) {
 	//fmt.Println(variables)
 	txn := d.NewReadOnlyTxn()
 	resp, err := txn.QueryWithVars(context.Background(), q, variables)
+	fmt.Println("El puto json: ", &resp.Json)
+	fmt.Println("Este es el hp error: ", err)
 	if err != nil {
-		return p, err
+		log.Fatal(err)
 	}
-	//fmt.Printf("Producto: %s\n", resp.Json)
 
 	type RootProduct struct {
 		Me []Product `json:"me"`
@@ -286,10 +287,9 @@ func (d *Db) GetProductById(product_id string) (Product, error) {
 
 	var r RootProduct
 	err = json.Unmarshal(resp.GetJson(), &r)
-	//fmt.Println(err)
 
-	if err != nil {
-		log.Fatal(err)
+	if err != nil || len(r.Me) == 0 {
+		return p, err
 	}
 
 	out, _ := json.MarshalIndent(r, "", "\t")
@@ -428,7 +428,11 @@ func (d *Db) GetBuyersByIp(ip string) []Buyer {
 
 	for _, t := range tb {
 		buyer := d.GetBuyerById(t.BuyerID)
-		buyers = append(buyers, buyer)
+		if !(buyerInSlice(buyer, buyers)) {
+			buyers = append(buyers, buyer)
+		} else {
+			fmt.Println("El comprador ya está en el listado")
+		}
 	}
 
 	return buyers
@@ -443,13 +447,20 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+func buyerInSlice(a Buyer, list []Buyer) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *Db) GetReport(buyer_id string) Report {
 	var report Report
 	var products []string
 	var recomedations []Product
-	//buyer := d.GetBuyerById(buyer_id)
 	transactions := d.GetTransactionsByBuyerId(buyer_id)
-	//fmt.Println(transactions)
 	sameIp := d.GetBuyersByIp(transactions[0].Ip)
 
 	for _, b := range sameIp {
@@ -463,17 +474,18 @@ func (d *Db) GetReport(buyer_id string) Report {
 		}
 	}
 
-	fmt.Println("Los productos: ", products)
-	fmt.Println("La cantidad de productos: ", len(products))
 	for _, r := range products {
 		fmt.Println(r)
 		p, err := d.GetProductById(r)
 		if err != nil {
-			fmt.Print("El producto no existe.")
-		} else {
-			fmt.Print("Las recomedaciones: ", p)
-			recomedations = append(recomedations, p)
+			log.Fatal(err)
 		}
+		if p.Name != "" {
+			recomedations = append(recomedations, p)
+		} else {
+			fmt.Println("El producto no existe.")
+		}
+
 	}
 
 	report.Transactions = transactions
