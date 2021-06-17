@@ -275,8 +275,7 @@ func (d *Db) GetProductById(product_id string) (Product, error) {
 	//fmt.Println(variables)
 	txn := d.NewReadOnlyTxn()
 	resp, err := txn.QueryWithVars(context.Background(), q, variables)
-	fmt.Println("El puto json: ", &resp.Json)
-	fmt.Println("Este es el hp error: ", err)
+
 	if err != nil {
 		log.Fatal(err)
 	}
