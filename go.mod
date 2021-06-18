@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/dgraph-io/dgo/v2 v2.2.0
 	github.com/go-chi/chi v1.5.4 // indirect
+	github.com/go-chi/cors v1.2.0 // indirect
 	github.com/go-chi/render v1.0.1 // indirect
 	github.com/graphql-go/graphql v0.7.9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

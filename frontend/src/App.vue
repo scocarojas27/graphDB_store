@@ -4,41 +4,61 @@
       <div class="col-md-6 offset-md-3 py-5">
         <h1>Generate a thumbnail of a website</h1>
 
-        <form v-on:submit.prevent="makeWebsiteThumbnail">
+        <form v-on:submit.prevent="getBuyerReport">
           <div class="form-group">
-            <input v-model="websiteUrl" type="text" id="website-input" placeholder="Enter a website" class="form-control">
+            <input v-model="BuyerID" type="text" id="website-input" placeholder="Enter buyer's ID" class="form-control">
           </div>
           <div class="form-group">
             <button class="btn btn-primary">Generate!</button>
           </div>
+          <div class="form-group">
+            <span>Message: {{ Report }}</span>
+          </div>
         </form>
-
-        <img :src="thumbnailUrl"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+
+ import axios from 'axios';
+
 export default {
   name: 'App',
+  
   data() { return {
-    websiteUrl: '',
-    thumbnailUrl: '',
+    BuyerID: '',
+    Report: '',
   } },
+
   methods: {
-    makeWebsiteThumbnail() {
-      axios.post("http://localhost:3000/api/thumbnail", {
-        url: this.websiteUrl,
+    getBuyerReport() {
+      let part1 = "{BuyerReport(BuyerID:\\\""
+      let part2 = "\\\"){Transactions, SameIp, Recomendations}}"
+      let request = part1.concat(this.BuyerID, part2)
+      console.log(request)
+      axios.post("http://localhost:4000/grahpql", {
+      headers: {
+        'Content-Type' : 'text/plain'
+      },
+      data: {
+        "query": request,
+      },
+      width: 1920,
+      height: 1080,
+      output: 'json',
+      thumbnail_width: 300 
       })
-              .then((response) => {
-                this.thumbnailUrl = response.data.screenshot;
-              })
-              .catch((error) => {
-                window.alert(`The API returned an error: ${error}`);
-              })
-    }
+      .then((response) => {
+        this.Report = response.data.BuyerReport;
+      })
+      .catch((error) => {
+        //console.log(response.data)
+        window.alert(`The API returned an error: ${error}`);
+      })
+      console 
+    } 
   }
 }
 </script>

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/graphql-go/graphql"
 	"github.com/scocarojas27/graphDB_store/dgraphql"
@@ -16,6 +17,9 @@ import (
 )
 
 func main() {
+
+	fs := http.FileServer(http.Dir("./frontend/dist"))
+	http.Handle("/", fs)
 
 	router, db, conn := initializeAPI()
 	defer conn.Close()
@@ -61,10 +65,20 @@ func initializeAPI() (*chi.Mux, *dgraphql.Db, *grpc.ClientConn) {
 		middleware.Compress(5, "gzip"), // compress results, mostly gzipping assets and json
 		middleware.StripSlashes,        // match paths with a trailing slash, strip it, and continue routing through the mux
 		middleware.Recoverer,           // recover from panics without crashing server
+		cors.Handler(cors.Options{
+			// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+			AllowedOrigins: []string{"https://*", "http://*"},
+			// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Connection", "Accept-Encoding", "User-Agent", "Host", "Content-Length"},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: false,
+			MaxAge:           300, // Maximum value not ignored by any of major browsers),
+		}),
 	)
-
 	// Create the graphql route with a Server method to handle it
 	router.Post("/graphql", s.GraphQL())
+	//fmt.Println(router)
 
 	return router, db, conn
 }
