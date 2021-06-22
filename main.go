@@ -18,9 +18,6 @@ import (
 
 func main() {
 
-	fs := http.FileServer(http.Dir("./frontend/dist"))
-	http.Handle("/", fs)
-
 	router, db, conn := initializeAPI()
 	defer conn.Close()
 
@@ -29,6 +26,9 @@ func main() {
 	// Listen on port 4000 and if there's an error log it and exit
 	log.Println(router)
 	log.Fatal(http.ListenAndServe(":4000", router))
+
+	fs := http.FileServer(http.Dir("./frontend/dist"))
+	http.Handle("/", fs)
 }
 
 func initializeAPI() (*chi.Mux, *dgraphql.Db, *grpc.ClientConn) {
@@ -67,18 +67,17 @@ func initializeAPI() (*chi.Mux, *dgraphql.Db, *grpc.ClientConn) {
 		middleware.Recoverer,           // recover from panics without crashing server
 		cors.Handler(cors.Options{
 			// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-			AllowedOrigins: []string{"https://*", "http://*"},
+			AllowedOrigins: []string{"*"},
 			// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Connection", "Accept-Encoding", "User-Agent", "Host", "Content-Length"},
-			ExposedHeaders:   []string{"Link"},
-			AllowCredentials: false,
-			MaxAge:           300, // Maximum value not ignored by any of major browsers),
+			AllowedHeaders:   []string{"X-Requested-With", "Content-Type", "Origin", "Cache-Control", "Pragma", "Authorization", "Accept", "Accept-Encoding"},
+			ExposedHeaders:   []string{},
+			AllowCredentials: true,
+			MaxAge:           1000, // Maximum value not ignored by any of major browsers),
 		}),
 	)
 	// Create the graphql route with a Server method to handle it
 	router.Post("/graphql", s.GraphQL())
-	//fmt.Println(router)
 
 	return router, db, conn
 }
