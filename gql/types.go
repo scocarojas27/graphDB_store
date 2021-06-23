@@ -2,7 +2,7 @@ package gql
 
 import "github.com/graphql-go/graphql"
 
-// User describes a graphql object containing a User
+// Buyer describes a graphql object containing a buyer
 var Buyer = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Buyer",
@@ -23,6 +23,7 @@ var Buyer = graphql.NewObject(
 	},
 )
 
+// Product describes a graphql object containing a product
 var Product = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Product",
@@ -43,23 +44,31 @@ var Product = graphql.NewObject(
 	},
 )
 
+// Report describes a graphql object containing a buyer report
 var Report = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Report",
 		Fields: graphql.Fields{
 			"Transactions": &graphql.Field{
-				Type: graphql.String,
+				Type: &graphql.List{
+					OfType: graphql.String,
+				},
 			},
 			"SameIp": &graphql.Field{
-				Type: graphql.String,
+				Type: &graphql.List{
+					OfType: graphql.String,
+				},
 			},
 			"Recomendations": &graphql.Field{
-				Type: graphql.String,
+				Type: &graphql.List{
+					OfType: graphql.String,
+				},
 			},
 		},
 	},
 )
 
+// Transaction describes a graphql object containing a transaction
 var Transaction = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Transaction",
@@ -77,7 +86,9 @@ var Transaction = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"Products": &graphql.Field{
-				Type: graphql.String,
+				Type: &graphql.List{
+					OfType: graphql.String,
+				},
 			},
 			"Date": &graphql.Field{
 				Type: graphql.String,

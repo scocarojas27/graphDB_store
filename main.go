@@ -31,6 +31,7 @@ func main() {
 	http.Handle("/", fs)
 }
 
+//Initialize the API, DB conection and the router
 func initializeAPI() (*chi.Mux, *dgraphql.Db, *grpc.ClientConn) {
 	// Create a new router
 	router := chi.NewRouter()

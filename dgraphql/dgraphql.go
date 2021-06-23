@@ -23,6 +23,7 @@ type Db struct {
 	*dgo.Dgraph
 }
 
+// Set a new conection to the Db
 func New() (*Db, *grpc.ClientConn, error) {
 	// Dial a gRPC connection. The address to dial to can be configured when
 	// setting up the dgraph cluster.
@@ -66,6 +67,7 @@ type Report struct {
 	Recomendations []Product     `json:"Recomendations,omitempty"`
 }
 
+//Insert all present day's products in the DB
 func (d *Db) InsertProducts() []Product {
 
 	response, err := http.Get("https://kqxty15mpg.execute-api.us-east-1.amazonaws.com/products")
@@ -138,6 +140,7 @@ func (d *Db) InsertProducts() []Product {
 
 }
 
+//Insert all present day's buyers in the DB
 func (d *Db) InsertBuyers() []Buyer {
 
 	response, err := http.Get("https://kqxty15mpg.execute-api.us-east-1.amazonaws.com/buyers")
@@ -215,6 +218,7 @@ func (d *Db) InsertBuyers() []Buyer {
 	return buyers
 }
 
+//Returns a buyer by their ID
 func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	variables := map[string]string{"$id1": buyer_id}
 	const q = `query Me($id1: string)
@@ -259,6 +263,7 @@ func (d *Db) GetBuyerById(buyer_id string) Buyer {
 	return b
 }
 
+//Returns a product by its ID
 func (d *Db) GetProductById(product_id string) (Product, error) {
 	variables := map[string]string{"$id1": product_id}
 	var p Product
@@ -302,6 +307,7 @@ func (d *Db) GetProductById(product_id string) (Product, error) {
 	return p, nil
 }
 
+//Returns all the buyers in the DB
 func (d *Db) GetAllBuyers() []Buyer {
 	const q = `
 		{
@@ -341,6 +347,7 @@ func (d *Db) GetAllBuyers() []Buyer {
 	return b
 }
 
+//Returns all of one buyer's transactions by their ID
 func (d *Db) GetTransactionsByBuyerId(buyer_id string) []Transaction {
 
 	variables := map[string]string{"$id1": buyer_id}
@@ -385,6 +392,7 @@ func (d *Db) GetTransactionsByBuyerId(buyer_id string) []Transaction {
 	return t
 }
 
+//Returns all the buyers related to one IP
 func (d *Db) GetBuyersByIp(ip string) []Buyer {
 	var buyers []Buyer
 	variables := map[string]string{"$ip1": ip}
@@ -437,6 +445,7 @@ func (d *Db) GetBuyersByIp(ip string) []Buyer {
 	return buyers
 }
 
+//Looks for a string in an array of strings
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -446,6 +455,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+//Looks for a buyer in an array of buyers
 func buyerInSlice(a Buyer, list []Buyer) bool {
 	for _, b := range list {
 		if b == a {
@@ -455,6 +465,7 @@ func buyerInSlice(a Buyer, list []Buyer) bool {
 	return false
 }
 
+//Return a report with information about a buyer's transactions, recommend products and other buyers that used their same IP
 func (d *Db) GetReport(buyer_id string) Report {
 	var report Report
 	var products []string

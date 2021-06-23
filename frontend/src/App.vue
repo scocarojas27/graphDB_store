@@ -14,10 +14,7 @@
           </div>
           <div class="form-group">
             <span class="subtitle3">Reporte:</span>
-            <span>{{ Report }}</span>
-          </div>
-          <div class="form-group">
-            <span>ss{{ Report }}</span>
+            <pre>{{ Report.BuyerReport }}</pre>
           </div>
         </form>
 
@@ -34,7 +31,7 @@
             <span class="subtitle3">Compradores:</span>
           </div>
           <div class="form-group">
-            <span>ss{{ Buyers }}</span>
+            <pre>{{ Buyers }}</pre>
           </div>
         </form>
       </div>
@@ -68,113 +65,94 @@ export default {
   data() { return {
     BuyerID: '',
     Report: '',
-    Buyers: [],
+    Buyers: '',
   } },
 
   methods: {
     getBuyerReport() {
-      let part1 = "{BuyerReport(BuyerID:\\\""
-      let part2 = "\\\"){Transactions, SameIp, Recomendations}}"
+      // Captures the buyer's ID to send it into the API.
+      let part1 = `{BuyerReport(BuyerID:\\"`
+      let part2 = `\\"){Transactions, SameIp, Recomendations}}`
       let request = part1.concat(this.BuyerID, part2)
       console.log(request)
-      axios.post("http://localhost:4000/grahpql", {
-      headers: {
-        'Content-Type' : 'text/plain'
-      },
-      data: {
-        query: `
-              {
-                  BuyerReport(${this.BuyerID}}) {
-                            Transactions,
-                            SameIp,
-                            Recomendations
-                  }
-              }
-          `,
-      },
-      output: 'json'
+      axios({method: "POST",
+             url: "http://localhost:4000/graphql",
+             headers: {
+              'Content-Type' : 'text/plain'
+             },
+             data: {
+              "query": `{BuyerReport(BuyerID:"${this.BuyerID}"){Transactions, SameIp, Recomendations}}`
+             }
       })
       .then((response) => {
-        this.Report = response.data.BuyerReport;
+        this.Report = response.data.data;
+        console.log(response.data.data)
       })
       .catch((error) => {
-        //console.log(response.data)
         window.alert(`The API returned an error: ${error}`);
       })
     },
     
     getAllBuyers() {
+      // Request all the buyers of the DB
       let part1 = "{Buyers{BuyerID, Name}}"
       console.log(part1)
       axios({method: "POST", 
-             url: "http://localhost:4000/grahpql",
+             url: "http://localhost:4000/graphql",
              headers: {
                 "Content-Type" : 'text/plain'
               },
              data: {"query": `{Buyers {BuyerID, Name}}`}
       })
       .then((response) => {
-        this.Report = response.data.Buyers;
+        this.Buyers = response.data.data;
       })
       .catch((error) => {
-        //console.log(response.data)
         window.alert(`The API returned an error: ${error}`);
       })
       console 
     },
     
     insertBuyers() {
+      // Request to insert all present day's buyers
       let part1 = "{InsertBuyers{BuyerID}}"
       console.log(part1)
-      axios.post("http://localhost:4000/grahpql", {
-      headers: {
-        'Content-Type' : 'text/plain'
-      },
-      data: {
-        "query": `
-              {
-                  InsertBuyers{
-                            BuyerID
-                  }
-              }
-          `,
-      },
-      output: 'json'
+      axios({method: "POST",
+             url: "http://localhost:4000/graphql",
+             headers: {
+               'Content-Type' : 'text/plain'
+             },
+             data: {
+               "query": `{InsertBuyers{BuyerID}}`,
+             },
       })
       .then((response) => {
         this.Report = response.data.Buyers;
         window.alert(`Compradores del día agregados correctamente.`);
       })
       .catch((error) => {
-        //console.log(response.data)
         window.alert(`The API returned an error: ${error}`);
       })
     }, 
 
     insertProducts() {
+      // Request to insert all present day's products
       let part1 = "{InsertProducts{Product}}"
       console.log(part1)
-      axios.post("http://localhost:4000/grahpql", {
-      headers: {
-        'Content-Type' : 'text/plain'
-      },
-      data: {
-        "query": `
-              {
-                  InsertProducts {
-                            Product
-                  }
-              }
-          `,
-      },
-      output: 'json'
+      axios({method: "POST",
+             url: "http://localhost:4000/graphql",
+             headers: {
+               'Content-Type' : 'text/plain'
+             },
+             data: {
+               "query": `{InsertProducts {ProductID}}`,
+             },
       })
       .then((response) => {
         this.Report = response.data.Buyers;
         window.alert(`Productos del día agregados correctamente.`);
       })
       .catch((error) => {
-        //console.log(response.data)
         window.alert(`The API returned an error: ${error}`);
       })
     } 

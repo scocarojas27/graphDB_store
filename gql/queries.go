@@ -15,15 +15,16 @@ func NewRoot(db *dgraphql.Db) *Root {
 	// Create a resolver holding our databse. Resolver can be found in resolvers.go
 	resolver := Resolver{db: db}
 
-	// Create a new Root that describes our base query set up. In this
-	// example we have a user query that takes one argument called name
+	// Create a new Root that describes our base query set up. It includes Buyer
+	// to get a buyer, Buyers to get all the buyers, InsertProducts to insert all present
+	//day's products, InsertBuyers to insert all present day's buyers, and so on...
 	root := Root{
 		Query: graphql.NewObject(
 			graphql.ObjectConfig{
 				Name: "Query",
 				Fields: graphql.Fields{
 					"Buyer": &graphql.Field{
-						// Slice of User type which can be found in types.go
+						// Buyer type which can be found in types.go
 						Type: graphql.NewNonNull(Buyer),
 						Args: graphql.FieldConfigArgument{
 							"BuyerID": &graphql.ArgumentConfig{
@@ -54,7 +55,6 @@ func NewRoot(db *dgraphql.Db) *Root {
 						Resolve: resolver.ReportResolver,
 					},
 					"Product": &graphql.Field{
-						// Slice of User type which can be found in types.go
 						Type: graphql.NewNonNull(Product),
 						Args: graphql.FieldConfigArgument{
 							"ProductID": &graphql.ArgumentConfig{
@@ -64,7 +64,6 @@ func NewRoot(db *dgraphql.Db) *Root {
 						Resolve: resolver.ProductResolver,
 					},
 					"BuyerTransactions": &graphql.Field{
-						// Slice of User type which can be found in types.go
 						Type: graphql.NewList(Transaction),
 						Args: graphql.FieldConfigArgument{
 							"BuyerID": &graphql.ArgumentConfig{

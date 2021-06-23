@@ -10,7 +10,7 @@ type Resolver struct {
 	db *dgraphql.Db
 }
 
-// BuyerResolver resolves our user query through a db call to GetUserByName
+// BuyerResolver resolves our user query through a db call to GetBuyerById
 func (r *Resolver) BuyerResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	buyer_id, ok := p.Args["BuyerID"].(string)
@@ -21,24 +21,28 @@ func (r *Resolver) BuyerResolver(p graphql.ResolveParams) (interface{}, error) {
 	return nil, nil
 }
 
+// BuyersResolver resolves our user query through a db call to GetAllBuyers
 func (r *Resolver) BuyersResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	buyer := r.db.GetAllBuyers()
 	return buyer, nil
 }
 
+// InsertProductsResolver resolves our user query through a db call to InsertProducts
 func (r *Resolver) InsertProductsResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	products := r.db.InsertProducts()
 	return products, nil
 }
 
+// InsertBuyersResolver resolves our user query through a db call to InsertBuyers
 func (r *Resolver) InsertBuyersResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	buyers := r.db.InsertBuyers()
 	return buyers, nil
 }
 
+// ReportResolver resolves our user query through a db call to GetReport
 func (r *Resolver) ReportResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	buyer_id, ok := p.Args["BuyerID"].(string)
@@ -49,6 +53,7 @@ func (r *Resolver) ReportResolver(p graphql.ResolveParams) (interface{}, error) 
 	return nil, nil
 }
 
+// ProductResolver resolves our user query through a db call to GetProductById
 func (r *Resolver) ProductResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	product_id, ok := p.Args["ProductID"].(string)
@@ -59,6 +64,7 @@ func (r *Resolver) ProductResolver(p graphql.ResolveParams) (interface{}, error)
 	return nil, nil
 }
 
+// BuyerTransactionsResolver resolves our user query through a db call to GetTransactionsByBuyerById
 func (r *Resolver) BuyerTransactionResolver(p graphql.ResolveParams) (interface{}, error) {
 	// Strip the name from arguments and assert that it's a string
 	buyer_id, ok := p.Args["BuyerID"].(string)
