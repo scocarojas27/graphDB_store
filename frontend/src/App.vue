@@ -1,63 +1,71 @@
 <template>
   <div id="app" class="container">
-    <div class="row">
-      <div class="col-md-6 offset-md-3 py-5">
+    <div>
+      <div class="offset-md-3 py-5">
         <h1>Aplicación para consulta y carga de compradores, productos y transacciones</h1>
-
-        <form v-on:submit.prevent="getBuyerReport">
-          <div class="form-group">
-            <span class="subtitle3">Generación de reportes</span>
-            <input v-model="BuyerID" type="text" id="website-input" placeholder="Enter buyer's ID" class="form-control">
-          </div>
-          <div class="form-group">
-            <button class="btn btn-primary">Generar reporte de comprador</button>
-          </div>
-          <div class="form-group">
-            <span class="subtitle3">Reporte:</span>
-            <pre>{{ Report.BuyerReport }}</pre>
-          </div>
-        </form>
-
       </div>
-      <div class="subtitle">
-        <form v-on:submit.prevent="getAllBuyers" class="subtitle">
-          <div class="subtitle3">
-            <span>Información de todos los compradores</span>
-          </div>
-          <div class="form-group  ">
-            <button class="btn btn-primary">Cargar todos los compradores</button>
-          </div>
-          <div class="form-group">
-            <span class="subtitle3">Compradores:</span>
-          </div>
-          <div class="form-group">
-            <pre>{{ Buyers }}</pre>
-          </div>
-        </form>
-      </div>
-
-      <div class="subtitle2">
-        <form v-on:submit.prevent="insertBuyers" class="subtitle3">
-          <div class="subtitle">
-            <span>Subir información</span>
-          </div>
-          <div class="form-group">
-            <button class="btn btn-primary">Agregar compradores del día</button>
-          </div>
-        </form>
-        <form v-on:submit.prevent="insertProducts" class="subtitle3">
-          <div class="form-group">
-            <button class="btn btn-primary">Agregar productos del día</button>
-          </div>
-        </form>
-      </div>
+      <b-card-group deck>
+        <b-card title="Subir información" aling="left">
+          <b-card-text>
+            <form v-on:submit.prevent="insertBuyers">
+              <div>
+                <span>Subir información</span>
+              </div>
+              <div class="form-group">
+                <button class="btn btn-primary">Agregar compradores del día</button>
+              </div>
+            </form>
+            <form v-on:submit.prevent="insertProducts">
+              <div class="form-group">
+                <button class="btn btn-primary">Agregar productos del día</button>
+              </div>
+            </form>
+          </b-card-text>
+        </b-card>
+        <b-card title="Generación de reportes" aling="center">
+          <form v-on:submit.prevent="getBuyerReport">
+            <div class="form-group">
+              <span>Generación de reportes</span>
+              <input v-model="BuyerID" type="text" id="website-input" placeholder="Enter buyer's ID" class="form-control">
+            </div>
+            <div class="form-group">
+              <button class="btn btn-primary">Generar reporte de comprador</button>
+            </div>
+            <div class="form-group">
+              <span>Reporte:</span>
+              <pre class="report">{{ Report.BuyerReport }}</pre>
+            </div>
+          </form>
+        </b-card>
+        <b-card title="Información de todos los compradores:" aling="right">
+          <form v-on:submit.prevent="getAllBuyers">
+            <div>
+              <span>Información de todos los compradores</span>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-primary">Cargar todos los compradores</button>
+            </div>
+            <div class="form-group">
+              <span>Compradores:</span>
+            </div>
+            <div class="form-group">
+              <pre>{{ Buyers }}</pre>
+            </div>
+          </form>
+        </b-card>
+      </b-card-group>
     </div>
   </div>
 </template>
 
 <script>
 
- import axios from 'axios';
+  import axios from 'axios';
+  import Vue from 'vue'
+  import { BootstrapVue } from 'bootstrap-vue'
+  // Import Bootstrap an BootstrapVue CSS files (order is important)
+
+  Vue.use(BootstrapVue)
 
 export default {
   name: 'App',
@@ -167,13 +175,27 @@ export default {
     margin-right: -4rem;
     font-size: 1.2rem;
   }
-  .subtitle2{
-    margin-left: -8rem;
-    margin-top: -23rem;
+  .subtitle1{
+    margin-left: 55rem;
+    margin-top: -20rem;
     margin-right: 2rem;
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .subtitle2{
+    margin-left: -4rem;
+    margin-top: -20rem;
+    margin-right: 2rem;
+    margin-bottom: auto;
     font-size: 1.2rem;
   }
   .subtitle3{
     font-size: 1.2rem;
+  }
+  .report{
+    margin-bottom: auto;
+    margin-top: 0px;
   }
 </style>
